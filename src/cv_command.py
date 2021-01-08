@@ -44,11 +44,13 @@ class CVControl:
 		self.cmd_pub = rospy.Publisher("/cmd_vel", Twist, queue_size=1)
 
 		# The first parameter is then target: [linear target, angular target] = [area of bounding box, center of bounding box]
-		self.PID_controller = PID([150000, 320], [0.0000045, 0.002], [0, 0], [0.000001, 0.0005])
+		self.target_area = 150000
+		self.target_center = 320
+		self.PID_controller = PID([self.target_area, self.target_center], [0.0000045, 0.002], [0, 0], [0.000001, 0.001])
 
 		# Setup the max linear velocity and angular velocity
 		self.max_lin_vel = 0.5
-		self.max_ang_vel = 1.5
+		self.max_ang_vel = 1.0
 
 
     # Main function that repeatedly gets called
@@ -112,9 +114,16 @@ class CVControl:
 
 	    # if a person is detected, send commands to approach or move away from them depending on proximity
 		if detected:
-			#print(rect_center)
-			#print(rect_area)
 			if current_area > 10000: # Execute if the person is within a reasonable range
+				# Since the detected bounding box is not so stable, setting threshold  
+				# to make the robot stay still when the target is not moving.
+				# print("current area: ", current_area)
+				# print("current center: ", current_center)
+
+				if abs(self.target_area - current_area) < 10000:
+					current_area = 150000
+				if abs(self.target_center - current_center) < 15:
+					current_center = 320
 				
 				# call the PID controller to update it and get new speeds
 				[uncliped_lin_speed, uncliped_ang_speed] = self.PID_controller.update([current_area, current_center])
@@ -142,17 +151,10 @@ class CVControl:
 				#print(linear_vel)
 				"""
 
-				if linear_vel < 0.05 and linear_vel > -0.05:
-					linear_vel = 0.0
-				if angular_vel < 0.05 and angular_vel > -0.05:
-					angular_vel = 0.0
-				
-
 				# Send Velocity command to turtlebot
 				self.send_command(linear_vel, angular_vel)	# Publish a motion command to the TurtleBot
 		
 		# Write frames to a video file for up to count_max frames
-		
 		if self.counter < self.count_max:
 			self.out.write(frame)
 			print(self.counter)
@@ -166,8 +168,6 @@ class CVControl:
     def send_command(self, linear_vel, angular_vel):
         # Put v, w commands into Twist message
         velocity = Twist()
-        # velocity.linear.x = linear_vel
-        # velocity.angular.z = angular_vel
 
         velocity.linear = Vector3(linear_vel, 0., 0.)
         velocity.angular= Vector3(0., 0., angular_vel)
@@ -232,12 +232,10 @@ class PID:
 		deltaT      = (currentTime-self.timeOfLastCall)
 
 		# integral of the error is current error * time since last update
-		# self.integrator += error
 		self.integrator += error * deltaT
 		I = self.integrator
 
 		# derivative is difference in error / time since last update
-		# D = error - self.last_error
 		D = (error-self.last_error) / deltaT
 
 		self.last_error = error
