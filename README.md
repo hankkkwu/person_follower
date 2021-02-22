@@ -18,3 +18,7 @@ The commander machine environment:
 - Ubuntu 16.04
 - ROS Kinetic
 - OpenCV 3.4.4
+
+Here is the result video:
+
+[![result video](http://image.youtube.com/vi/9BPg2zMMid8/0.jpg)](https://www.youtube.com/watch?v=9BPg2zMMid8 "Person Following")
