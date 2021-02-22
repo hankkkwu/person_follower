@@ -21,4 +21,4 @@ The commander machine environment:
 
 Here is the result video:
 
-[![result video](http://image.youtube.com/vi/9BPg2zMMid8/0.jpg)](https://www.youtube.com/watch?v=9BPg2zMMid8 "Person Following")
+[![result video](http://img.youtube.com/vi/9BPg2zMMid8/0.jpg)](https://www.youtube.com/watch?v=9BPg2zMMid8 "Person Following")
